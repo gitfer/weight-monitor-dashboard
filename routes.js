@@ -4,28 +4,23 @@ var express = require('express');
 var router = express.Router();
 var jsonfile = require('jsonfile');
 var _ = require('lodash');
-var file = process.env.WEIGHTFILE;
-
-// var obj = {
-//   spreadsheets: [{
-//     name: "test",
-//     weights: [],
-//   }]
-// };
-
-// jsonfile.writeFile(file, obj, {spaces: 2}, function(err) {
-//   console.error(err)
-// })
+var file = process.env.WEIGHTFILE || 'data.json';
 
 router.get('/', function(req, res, next) {
-  var options = {
-    order: [['createdAt', 'DESC']]
-  };
   jsonfile.readFile(file, function(err, obj) {
-    res.render('index', {
-      weights: obj.spreadsheets[0].weights,
-      spreadsheets: obj.spreadsheets
-    });
+    console.log('Filename: ', file, ' Content', obj);
+    if(obj === undefined){
+       var newObj = { spreadsheets:[{name:"test",weights:[]}]};
+       jsonfile.writeFile(file, newObj, function (err) {
+          console.error('err', err);
+          res.redirect('/');
+        }); 
+    }else{
+      res.render('index', {
+        weights: obj.spreadsheets[0].weights,
+        spreadsheets: obj.spreadsheets
+      }); 
+    }
   })
 });
 
