@@ -36,14 +36,17 @@ router.get('/create', function(req, res, next) {
 router.get('/edit/:id', function(req, res, next) {
   // Find by id
    jsonfile.readFile(file, function(err, obj) {
-    // console.dir('Reading json...', obj);
+    console.log('Reading json for edit...', obj);
     if(err !== null){
       console.error('err', err);  
     }else{
-      var weight = _.find(obj.spreadsheets[0].weights, weigth => weigth.id === req.id);
+      console.log('Found json for edit...', obj);
+      var weight = _.find(obj.spreadsheets[0].weights, function(weight){
+      return weight.id.toString() === req.params.id.toString();
+    });
       if(!_.isNil(weight)){
         res.render('upsert', {
-          weigth: weigth
+          weight: weight
         }); 
       }
     }
@@ -53,10 +56,10 @@ router.get('/edit/:id', function(req, res, next) {
 router.get('/delete/:id', function(req, res, next) {
    jsonfile.readFile(file, function(err, obj) {
     console.log('Reading json...', JSON.stringify(obj.spreadsheets[0].weights));
-    var weight = _.remove(obj.spreadsheets[0].weights, function(weigth){
-      return weigth.id.toString() === req.params.id.toString();
+    var weight = _.remove(obj.spreadsheets[0].weights, function(weight){
+      return weight.id.toString() === req.params.id.toString();
     }); 
-    console.log('Deleting weigth', weight);
+    console.log('Deleting weight', weight);
       jsonfile.writeFile(file, obj, function (err) {
         console.error('err', err);
         res.redirect('/');
@@ -67,21 +70,33 @@ router.get('/delete/:id', function(req, res, next) {
 router.post('/upsert', function(req, res, next) {
   // req.body
   var newWeight = req.body;
-   console.dir('newWeight', req.body);
-  newWeight.id = Date.now();
-
-   jsonfile.readFile(file, function(err, obj) {
-    console.dir('Reading json...', obj);
-    if(err !== null){
-      console.error('err', err);  
-    }else{
+  console.log('Edit or create', newWeight);
+  jsonfile.readFile(file, function(err, obj) {
+    if(newWeight.id){
+      var editWeight = _.find(obj.spreadsheets[0].weights, function(weight){
+        return weight.id.toString() === newWeight.id.toString();
+      });
+      _.remove(obj.spreadsheets[0].weights, editWeight);
       obj.spreadsheets[0].weights.push(newWeight);
       jsonfile.writeFile(file, obj, function (err) {
         console.error(err);
         res.redirect('/');
       }); 
+    }else{
+      newWeight.id = Date.now();
+       console.log('newWeight', newWeight);
+        console.log('Reading json...', obj);
+        if(err !== null){
+          console.error('err', err);  
+        }else{
+          obj.spreadsheets[0].weights.push(newWeight);
+          jsonfile.writeFile(file, obj, function (err) {
+            console.error(err);
+            res.redirect('/');
+          }); 
+        }
     }
-  });
+  }); 
 });
 
 // Route for creating spreadsheet.
