@@ -4,7 +4,7 @@ var express = require('express');
 var router = express.Router();
 var jsonfile = require('jsonfile');
 var _ = require('lodash');
-var file = './data.json'
+var file = process.env.WEIGHTFILE;
 
 // var obj = {
 //   spreadsheets: [{
