@@ -24,6 +24,11 @@ router.get('/', function(req, res, next) {
   })
 });
 
+router.get('/download', function(req, res){
+  var filePath = __dirname + '/' + file;
+  res.download(filePath); // Set disposition and send it.
+});
+
 router.get('/create', function(req, res, next) {
   res.render('upsert');
 });
